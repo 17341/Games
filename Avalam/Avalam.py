@@ -219,8 +219,6 @@ class Avalam_Game:
         self.add_txt(self.problem_messages[-1],370,490,COLORS["GREEN"],size = 30)
     """    
 
-
-
 class Avalam_AI :
 
     def move(self):
