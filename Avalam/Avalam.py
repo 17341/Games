@@ -1,8 +1,11 @@
 import pygame
+import pygame
+from pygame.locals import *
 import time 
 from random import choice
 
-# Constantes :
+pygame.init()
+
 
 BOARD={"0":[6,7],
         "1":[4,5,6,7],
@@ -25,6 +28,9 @@ COLORS={"BLACK" : (0, 0, 0),
         "BLUE":(0,0,255),
         "GRAY":(128,128,128)}
 board_color = {}
+
+chess_drop_sound = pygame.mixer.Sound("Avalam\Sounds\Chess_drop.wav")
+chess_move_sound = pygame.mixer.Sound("Avalam\Sounds\Chess_move.wav")
 
 class Avalam_Game:
 
@@ -117,6 +123,7 @@ class Avalam_Game:
             game.problem_messages.append("Not possible :/ ")
             
     def make_move(self,initial_position,final_position):
+        chess_move_sound.play()
         try : 
             if list(final_position) in self.coup_possible[initial_position] : 
                 self.body[final_position[0]][final_position[1]] += self.body[initial_position[0]][initial_position[1]]
@@ -139,20 +146,19 @@ class Avalam_Game:
                  
         except: 
             game.problem_messages.append("Not possible :/ ")
-
         self.joueur +=1 
                
         pygame.display.update()
    
     def add_txt(self,txt,x,y,color,size = 50):
-        pygame.init()
+        
         Letter_font = pygame.font.SysFont('comicsans',size)
         text = Letter_font.render(str(txt),1,color)
         self.screen.blit(text,(x,y))
         pygame.display.update()  
 
     def add_image(self,image,x,y):
-        pygame.init()
+        
         img= pygame.image.load(image) 
         self.screen.blit(img,(x,y))
         pygame.display.update()  
@@ -194,6 +200,10 @@ class Avalam_Game:
         pygame.draw.rect(self.screen,COLORS["YELLOW"], (10,150,530,100))
         pygame.draw.rect(self.screen,COLORS["GREEN"], (10,270,530,100))
         pygame.draw.rect(self.screen,COLORS["RED"], (10,390,530,100))
+
+        pygame.draw.rect(self.screen,COLORS["RED"], (490,5,50,45))
+        self.add_txt("S",500,10,COLORS["BLACK"],size = 60)
+
         self.add_txt("Main Menu ",165,50,COLORS["BLACK"],size = 60)
         self.add_txt("Play",220,180,COLORS["BLACK"],size = 60)
         self.add_txt("Info",220,300,COLORS["BLACK"],size = 60)
@@ -208,6 +218,8 @@ class Avalam_Game:
         self.add_txt("Last Problem : ",220,490,COLORS["WHITE"],size = 30)
         self.add_txt(self.problem_messages[-1],370,490,COLORS["GREEN"],size = 30)
     """    
+
+
 
 class Avalam_AI :
 
@@ -283,16 +295,26 @@ def info():
     pygame.display.flip()   
 
 def menu():
+    music = 0 
+    pygame.mixer.music.load("Avalam\Sounds\Menu.wav")
+    pygame.mixer.music.set_volume(0.03)
+    pygame.mixer.music.play(-1)
     game.menu()
     run = True
     play_rect = [(x, y ) for x in range(10,540) for y in range (150,250)]
     info_rect = [(x, y ) for x in range(10,540) for y in range (270,370)]
     quit_rect = [(x, y ) for x in range(10,540) for y in range (390,490)]
+    music_button = [(x, y ) for x in range(490,540) for y in range (5,50)]
     while run :
+        if music %2 == 0 :
+            pygame.mixer.music.unpause() 
         mouse_pos = pygame.mouse.get_pos() 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  
                 run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and mouse_pos in music_button:
+                pygame.mixer.music.pause()
+                music += 1
             elif event.type == pygame.MOUSEBUTTONDOWN and mouse_pos in  play_rect :
                 main()
             elif event.type == pygame.MOUSEBUTTONDOWN and mouse_pos in info_rect :
@@ -301,15 +323,16 @@ def menu():
                 quit()
                     
 def main():
-    pygame.init()
     run = True
     clock = pygame.time.Clock()
     FPS = 60
     show = 0
-    
+    game.screen.fill(COLORS["BLACK"])
+    game.score()
+    chess_drop_sound.play()
+    time.sleep(0.4)
     game.draw_board()
     game.score()
-    game.end()
     while run :
         ia.move()
         game.status()
